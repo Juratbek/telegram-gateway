@@ -1,4 +1,4 @@
-# @deployed/telegram-gateway
+# @deployedstack/telegram-gateway
 
 TypeScript SDK for the [Telegram Gateway API](https://core.telegram.org/gateway) — send and verify OTP codes via Telegram at a fraction of the cost of SMS.
 
@@ -37,13 +37,13 @@ For a full walkthrough, see the official [Quick-start Guide](https://core.telegr
 ## Installation
 
 ```bash
-npm install @deployed/telegram-gateway
+npm install @deployedstack/telegram-gateway
 ```
 
 ## Quick Start
 
 ```ts
-import { TelegramGateway } from "@deployed/telegram-gateway";
+import { TelegramGateway } from "@deployedstack/telegram-gateway";
 
 const gateway = new TelegramGateway({
   accessToken: process.env.TG_GATEWAY_TOKEN!,
@@ -250,7 +250,7 @@ Returns `true` if the signature is valid and the timestamp is within the allowed
 
 ```ts
 import express from "express";
-import { verifyCallbackSignature } from "@deployed/telegram-gateway";
+import { verifyCallbackSignature } from "@deployedstack/telegram-gateway";
 
 const app = express();
 
@@ -276,7 +276,7 @@ app.post("/webhook", express.text({ type: "application/json" }), (req, res) => {
 
 ```ts
 import { Hono } from "hono";
-import { verifyCallbackSignature } from "@deployed/telegram-gateway";
+import { verifyCallbackSignature } from "@deployedstack/telegram-gateway";
 
 const app = new Hono();
 
@@ -304,7 +304,7 @@ app.post("/webhook", async (c) => {
 ```ts
 import { Controller, Post, Req, Res, HttpStatus } from "@nestjs/common";
 import { Request, Response } from "express";
-import { verifyCallbackSignature } from "@deployed/telegram-gateway";
+import { verifyCallbackSignature } from "@deployedstack/telegram-gateway";
 
 @Controller("webhook")
 export class WebhookController {
@@ -339,7 +339,7 @@ Then use `@RawBody()` instead of reading from `req.body`:
 
 ```ts
 import { Controller, Post, RawBody, Headers, HttpStatus, HttpCode, ForbiddenException } from "@nestjs/common";
-import { verifyCallbackSignature } from "@deployed/telegram-gateway";
+import { verifyCallbackSignature } from "@deployedstack/telegram-gateway";
 
 @Controller("webhook")
 export class WebhookController {
@@ -374,7 +374,7 @@ export class WebhookController {
 All API errors throw a `TelegramGatewayError` with a `code` property matching the Telegram error string (e.g. `ACCESS_TOKEN_INVALID`).
 
 ```ts
-import { TelegramGatewayError } from "@deployed/telegram-gateway";
+import { TelegramGatewayError } from "@deployedstack/telegram-gateway";
 
 try {
   await gateway.sendVerificationMessage({ phone_number: "+1234567890" });
@@ -399,7 +399,7 @@ import type {
   CheckVerificationStatusParams,
   RevokeVerificationMessageParams,
   CallbackReport,
-} from "@deployed/telegram-gateway";
+} from "@deployedstack/telegram-gateway";
 ```
 
 ## Resources

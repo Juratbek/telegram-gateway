@@ -1,5 +1,5 @@
 {
-  "name": "@deployed/telegram-gateway",
+  "name": "@deployedstack/telegram-gateway",
   "version": "1.0.0",
   "description": "TypeScript SDK for the Telegram Gateway API — send and verify OTP codes via Telegram",
   "type": "module",
