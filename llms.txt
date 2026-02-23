@@ -1,0 +1,143 @@
+# @deployed/telegram-gateway
+
+> TypeScript SDK for the Telegram Gateway API — send and verify OTP codes via Telegram.
+
+## Installation
+
+```
+npm install @deployed/telegram-gateway
+```
+
+## Quick Start
+
+```ts
+import { TelegramGateway } from "@deployed/telegram-gateway";
+
+const gateway = new TelegramGateway({ accessToken: "your-token" });
+
+const status = await gateway.sendVerificationMessage({
+  phone_number: "+998901234567",
+  code_length: 6,
+  ttl: 300,
+});
+
+const check = await gateway.checkVerificationStatus({
+  request_id: status.request_id,
+  code: userEnteredCode,
+});
+
+if (check.verification_status?.status === "code_valid") {
+  // success
+}
+```
+
+## API
+
+### Constructor
+
+```ts
+new TelegramGateway(options: TelegramGatewayOptions)
+```
+
+- `accessToken` (string, required): API token from gateway.telegram.org.
+- `baseUrl` (string, optional): Override API base URL. Default: `"https://gatewayapi.telegram.org"`.
+- `fetch` (Function, optional): Custom fetch implementation.
+
+### sendVerificationMessage(params): Promise<RequestStatus>
+
+Send a verification code via Telegram. Charges per delivery; free to your own number.
+
+Parameters:
+- `phone_number` (string, required): E.164 format, e.g. `"+998901234567"`.
+- `request_id` (string, optional): ID from `checkSendAbility` — makes this call free.
+- `sender_username` (string, optional): Verified Telegram channel username.
+- `code` (string, optional): Your own code (4–8 chars). If set, `code_length` is ignored.
+- `code_length` (number, optional): Length of Telegram-generated code (4–8).
+- `callback_url` (string, optional): HTTPS URL for delivery report callbacks (max 256 bytes).
+- `payload` (string, optional): Internal payload, not shown to user (max 128 bytes).
+- `ttl` (number, optional): Time-to-live in seconds (30–3600). Default: 120.
+
+Returns: `RequestStatus` with `request_id`, `request_cost`, `remaining_balance`.
+Throws: `TelegramGatewayError` on API errors.
+
+### checkSendAbility(params): Promise<SendAbilityResult>
+
+Check if a phone number can receive messages before sending. Never throws on API errors.
+
+Parameters:
+- `phone_number` (string, required): E.164 format.
+
+Returns: `{ ok: true, result: RequestStatus }` or `{ ok: false, error: string }`.
+
+If `ok`, pass `result.request_id` to `sendVerificationMessage` to avoid double charge.
+
+### checkVerificationStatus(params): Promise<RequestStatus>
+
+Check delivery status and optionally validate a user-entered code. Always free.
+
+Parameters:
+- `request_id` (string, required): From `sendVerificationMessage`.
+- `code` (string, optional): User-entered code for server-side validation.
+
+Returns: `RequestStatus` with `delivery_status` and `verification_status`.
+
+`verification_status.status` values: `"code_valid"`, `"code_invalid"`, `"code_max_attempts_exceeded"`, `"expired"`.
+`delivery_status.status` values: `"sent"`, `"delivered"`, `"read"`, `"expired"`, `"revoked"`.
+
+### revokeVerificationMessage(params): Promise<true>
+
+Revoke a previously sent message (best-effort). Always free.
+
+Parameters:
+- `request_id` (string, required): From `sendVerificationMessage`.
+
+Returns: `true` if accepted.
+
+### verifyCallbackSignature(apiToken, report, maxAgeSeconds?): boolean
+
+Verify integrity of delivery report callbacks from Telegram. Standalone function (not a class method).
+
+```ts
+import { verifyCallbackSignature } from "@deployed/telegram-gateway";
+```
+
+Parameters:
+- `apiToken` (string): Your API token.
+- `report` (CallbackReport): `{ timestamp, signature, body }` from request headers and raw body.
+- `maxAgeSeconds` (number, optional): Max timestamp age. Default: 300 (5 min).
+
+Returns: `true` if signature is valid and timestamp is fresh.
+
+Important: Pass the raw body string, not parsed/re-serialized JSON.
+
+## Error Handling
+
+All methods (except `checkSendAbility`) throw `TelegramGatewayError` on failure.
+
+```ts
+import { TelegramGatewayError } from "@deployed/telegram-gateway";
+
+try {
+  await gateway.sendVerificationMessage({ phone_number: "+1234567890" });
+} catch (err) {
+  if (err instanceof TelegramGatewayError) {
+    console.error(err.code); // e.g. "PHONE_NUMBER_INVALID"
+  }
+}
+```
+
+## Key Types
+
+```ts
+import type {
+  RequestStatus,
+  DeliveryStatus,
+  VerificationStatus,
+  SendVerificationMessageParams,
+  CheckSendAbilityParams,
+  CheckVerificationStatusParams,
+  RevokeVerificationMessageParams,
+  SendAbilityResult,
+  CallbackReport,
+} from "@deployed/telegram-gateway";
+```
